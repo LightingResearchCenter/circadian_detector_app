@@ -3,11 +3,15 @@ import 'package:circadiandetector/pages/maps_screen.dart';
 import 'package:circadiandetector/pages/status_screen.dart';
 import 'package:circadiandetector/pages/camera_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+
 
 class CircadianDetector extends StatefulWidget {
   final List<CameraDescription> camera;
+  final Database database;
 
-  const CircadianDetector({Key key, this.camera}) : super(key: key);
+  const CircadianDetector({Key key, this.camera, this.database})
+      : super(key: key);
 
   @override
   _CircadianDetectorState createState() => _CircadianDetectorState();
@@ -54,26 +58,36 @@ class _CircadianDetectorState extends State<CircadianDetector>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5.0),
           ),
-          Icon(Icons.more_vert),
+          IconButton(
+              icon: Icon(Icons.more_vert),
+              onPressed: () {
+
+              },
+          ),
         ],
       ),
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
-          CameraScreen(widget.camera),
-          StatusScreen(),
+          CameraScreen(widget.camera, widget.database),
+          StatusScreen(widget.database),
           MapsScreen(),
         ],
       ),
       floatingActionButton: showFab
           ? FloatingActionButton(
-              backgroundColor: Theme.of(context).accentColor,
-              child: Icon(
-                Icons.message,
-                color: Colors.white,
-              ),
-              onPressed: () => print('Open Chats'),
-            )
+          backgroundColor: Theme
+              .of(context)
+              .accentColor,
+          child: Icon(
+            Icons.message,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            print('Open Database');
+
+          }
+      )
           : null,
     );
   }

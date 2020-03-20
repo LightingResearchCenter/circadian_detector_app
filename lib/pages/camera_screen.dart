@@ -7,11 +7,15 @@ import 'dart:async';
 import 'dart:io';
 import 'package:image/image.dart' as image;
 import 'package:image_picker/image_picker.dart';
+import 'package:exif/exif.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:circadiandetector/database_helper.dart';
 
 class CameraScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
+  final Database database;
 
-  CameraScreen(this.cameras);
+  CameraScreen(this.cameras, this.database);
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
@@ -72,12 +76,19 @@ class _CameraScreenState extends State<CameraScreen> {
 //              );
 //              await _controller.takePicture(path);
               if (image != null) {
+                Map<String, IfdTag> data = await readExifFromBytes(
+                    await new File(image.path).readAsBytes());
+//                for (String key in data.keys) {
+//                  print("$key (${data[key].tagType}): ${data[key]}");
+//                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => DisplayPictureScreen(
                       imagePath: image.path,
                       currentLocation: currentLocation,
+                      exifData: data,
+                      database: widget.database,
                     ),
                   ),
                 );
@@ -97,8 +108,15 @@ class _CameraScreenState extends State<CameraScreen> {
 class DisplayPictureScreen extends StatefulWidget {
   final String imagePath;
   final Position currentLocation;
+  final Map<String, IfdTag> exifData;
+  final Database database;
 
-  const DisplayPictureScreen({Key key, this.imagePath, this.currentLocation})
+  const DisplayPictureScreen(
+      {Key key,
+      this.imagePath,
+      this.currentLocation,
+      this.exifData,
+      this.database})
       : super(key: key);
 
   @override
@@ -112,7 +130,6 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
     image.Image img2 =
         image.decodeImage(File(widget.imagePath).readAsBytesSync());
     var location = widget.currentLocation;
-    print(img.image);
 
     var r = 0;
     var g = 0;
@@ -133,17 +150,37 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
     var gavg = g / totpix;
     var bavg = b / totpix;
     var aavg = a / totpix;
+    var shutterSpeed = widget.exifData['EXIF ShutterSpeedValue'];
+    var iso = widget.exifData['EXIF ISOSpeedRatings'];
+    var wid = <Widget>[
+      img,
+      Text("RGBA = ($ravg, $gavg, $bavg, $aavg)"),
+      Text("Location = (${location.latitude},${location.longitude})")
+    ];
+    for (String key in widget.exifData.keys) {
+      wid.add(Text(
+          "$key (${widget.exifData[key].tagType}): ${widget.exifData[key]}"));
+    }
+    Data entry = Data(
+        dateTime: DateTime.now(),
+        lat: location.latitude,
+        lon: location.longitude,
+        red: ravg,
+        green: gavg,
+        blue: bavg,
+        shutterSpeed: shutterSpeed.toString(),
+        iso: iso.toString(),
+        cs:(ravg+gavg+bavg)/3/255*0.7,
+    );
+    print(entry.toMap().toString());
+    print(widget.database.insert('data', entry.toMap()));
+
     return Scaffold(
       appBar: AppBar(title: Text('Display the Picture')),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
       body: ListView(
-        children: <Widget>[
-          img,
-          Text("RGBA = ($ravg, $gavg, $bavg, $aavg)"),
-          Text("Location = (${location.latitude},${location.longitude})"),
-          Text("EXIF DATA = ${img2.exif.data.entries.toString()}")
-        ],
+        children: wid,
       ),
     );
   }
