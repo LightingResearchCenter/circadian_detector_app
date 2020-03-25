@@ -31,8 +31,6 @@ class _StatusScreenState extends State<StatusScreen> {
         ],
       );
     } else {
-      print("Records = ");
-      print(records);
       if (records.length == 0) {
         return ListView(
           children: <Widget>[
@@ -48,7 +46,7 @@ class _StatusScreenState extends State<StatusScreen> {
           wid.add(
             Row(
               children: <Widget>[
-                Text(''' ${map['id']} @ ${map['datetime']}: 
+                Text('''${map['id']} @ ${map['datetime']}: 
  RGB (${map['red'].round()}, ${map['green'].round()},${map['blue'].round()}) 
  ShutterSpeed (${map['shutterSpeed']}) 
  ISO (${map['iso']})
@@ -58,15 +56,28 @@ class _StatusScreenState extends State<StatusScreen> {
             ),
           );
         }
-        return ListView(children: wid);
+        return Scaffold(
+          body: ListView(children: wid),
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.access_alarm),
+            onPressed: () {
+              print("Button Pressed");
+              calculateCSTimeLine(widget.database, 30);
+            },
+          ),
+        );
       }
     }
   }
 
   void getRecords(db) async {
-    records = await db.query('data');
+    var results = await db.query('data');
     setState(() {
-      records = records;
+      records = results;
     });
+  }
+  void calculateCSTimeLine(Database db, int increment) async {
+    var result = await db.query('data');
+    print(result);
   }
 }

@@ -3,7 +3,6 @@ import 'package:circadiandetector/circadian_detector_home.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
-import 'package:circadiandetector/database_helper.dart';
 
 Future<void> main() async {
 // Ensure that plugin services are initialized so that `availableCameras()`

@@ -1,7 +1,5 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' show join;
-import 'package:path_provider/path_provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'dart:io';
@@ -146,10 +144,10 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
         totpix++;
       }
     }
-    var ravg = r / totpix;
-    var gavg = g / totpix;
-    var bavg = b / totpix;
-    var aavg = a / totpix;
+    double ravg = r / totpix;
+    double gavg = g / totpix;
+    double bavg = b / totpix;
+    double aavg = a / totpix;
     var shutterSpeed = widget.exifData['EXIF ShutterSpeedValue'];
     var iso = widget.exifData['EXIF ISOSpeedRatings'];
     var wid = <Widget>[
@@ -172,7 +170,6 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
         iso: iso.toString(),
         cs:(ravg+gavg+bavg)/3/255*0.7,
     );
-    print(entry.toMap().toString());
     print(widget.database.insert('data', entry.toMap()));
 
     return Scaffold(

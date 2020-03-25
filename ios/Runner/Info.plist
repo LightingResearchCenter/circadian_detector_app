@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>To be able to share the database file with users.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>This app needs access to location when open.</string>
 

@@ -4,7 +4,8 @@ import 'package:circadiandetector/pages/status_screen.dart';
 import 'package:circadiandetector/pages/camera_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
-
+import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:sqflite_porter/utils/csv_utils.dart';
 
 class CircadianDetector extends StatefulWidget {
   final List<CameraDescription> camera;
@@ -54,15 +55,11 @@ class _CircadianDetectorState extends State<CircadianDetector>
           ],
         ),
         actions: <Widget>[
-          Icon(Icons.search),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5.0),
-          ),
           IconButton(
-              icon: Icon(Icons.more_vert),
-              onPressed: () {
-
-              },
+            icon: Icon(Icons.more_vert),
+            onPressed: () {
+              exportDatabase(widget.database);
+            },
           ),
         ],
       ),
@@ -74,21 +71,18 @@ class _CircadianDetectorState extends State<CircadianDetector>
           MapsScreen(),
         ],
       ),
-      floatingActionButton: showFab
-          ? FloatingActionButton(
-          backgroundColor: Theme
-              .of(context)
-              .accentColor,
-          child: Icon(
-            Icons.message,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            print('Open Database');
-
-          }
-      )
-          : null,
     );
+  }
+
+  void exportDatabase(Database db) async {
+    var result = await db.query('data');
+    var csv = mapListToCsv(result);
+    print("Exporting Database");
+    final Email email = Email(
+      body: csv,
+      subject: 'Circadian Data ${DateTime.now().toIso8601String()}',
+      isHTML: true,
+    );
+    await FlutterEmailSender.send(email);
   }
 }
